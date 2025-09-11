@@ -54,6 +54,9 @@ sudo userdel -r dietpi
 
 # Edit SSH configuration
 sudo nano /etc/ssh/sshd_config
+
+# allow ssh from Proxmox only
+sudo ufw allow from 192.168.144.10 to any port 22 proto tcp comment 'SSH from Proxmox jumpbox only'
 ```
 
 **SSH Configuration Changes:**

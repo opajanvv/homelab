@@ -164,6 +164,9 @@ sudo ufw allow 80/tcp
 sudo ufw allow from 192.168.144.0/23
 sudo ufw allow from 192.168.145.0/24
 
+# allow ssh from the Proxmox server only
+sudo ufw allow from 192.168.144.10 to any port 22 proto tcp comment 'SSH from Proxmox jumpbox only'
+
 # Verify rules
 sudo ufw status
 ```

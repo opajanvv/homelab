@@ -118,7 +118,7 @@ sudo apt install -y git ansible neovim htop curl wget ufw fail2ban
 
 # Configure UFW firewall
 sudo ufw --force enable
-sudo ufw allow 22/tcp comment 'SSH access'
+sudo ufw allow from 192.168.144.10 to any port 22 proto tcp comment 'SSH from Proxmox jumpbox only'
 sudo ufw allow 2283/tcp comment 'Immich web interface'
 
 # Add foundation automation cron job
