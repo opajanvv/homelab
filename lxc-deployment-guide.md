@@ -496,6 +496,24 @@ See service-specific sections below.
   openssl s_client -connect <service>.janvv.nl:443 -servername <service>.janvv.nl
   ```
 
+### Web Server (CT 110)
+pct exec 110 -- bash -lc '
+apt update
+apt install -y nginx
+systemctl enable --now nginx
+'
+
+
+# Replace default site root with /data
+sed -i 's|root /var/www/html;|root /data;|' /etc/nginx/sites-available/default
+
+# Create a test index.html in /data
+echo '<h1>Hello from /data</h1>' > /data/index.html
+
+# Reload nginx to apply config
+systemctl reload nginx
+<F41><F29>
+
 ---
 
 ## Firewall Management
@@ -529,7 +547,7 @@ pct exec <CONTAINER_ID> -- ufw status verbose
 **Audit All Containers:**
 ```bash
 # Check firewall status across all service containers
-for vmid in {100..109}; do
+for vmid in {100..110}; do
   echo "=== Container $vmid ==="
   pct exec $vmid -- ufw status verbose
   echo
