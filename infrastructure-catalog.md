@@ -50,6 +50,8 @@
 | WordPress JokeGoudriaan | `/lxcdata/wp-jokegoudriaan` | `/data` | - | ssd_pool |
 | WordPress Kledingruil | `/lxcdata/wp-kledingruil` | `/data` | - | ssd_pool |
 | Plex | `/lxcdata/plex` | `/data` | `/media` → `/media` | ssd_pool + media_pool |
+| Tunnel | No mounts | - | - | ssd_pool |
+| Lan Proxy | `lxcdata/lanproxy` | `/data` | - | ssd_pool |
 | Home Assistant | VM disk only | - | - | nvme_pool |
 
 ### Backup System
@@ -179,6 +181,7 @@
 | n8n | n8n.local | 192.168.144.61 | Workflow Automation |
 | wordpress | wordpress.local | 192.168.144.70 | WordPress JokeGoudriaan |
 | kledingruil | kledingruil.local | 192.168.144.71 | WordPress Kledingruil |
+| grav | grav.local | 192.168.144.72 | janvv Personal Website |
 | plex | plex.local | 192.168.144.100 | Media Server |
 | immich | immich.local | 192.168.144.110 | Media Server |
 | homeassistant | homeassistant.local | 192.168.144.120 | Home Automation |
@@ -215,6 +218,7 @@
 | n8n | CT 106 | 192.168.144.61 | n8n.local | 2 CPU, 2GB RAM, 16GB | External APIs | https://n8n.janvv.nl |
 | WordPress JokeGoudriaan | CT 104 | 192.168.144.70 | jokegoudriaan.local | 2 CPU, 2GB RAM, 16GB | MariaDB | https://jokegoudriaan.nl |
 | WordPress Kledingruil | CT 105 | 192.168.144.71 | kledingruil.local | 2 CPU, 2GB RAM, 16GB | MariaDB | https://kledingruil.jokegoudriaan.nl |
+| janvv Personal Website | CT 110 | 192.168.144.72 | grav.local | 2 CPU, 2GB RAM, 20GB | | https://opa.janvv.nl |
 
 **Legacy Redirect**: https://jokegoudriaan.nl/kledingruil → https://kledingruil.jokegoudriaan.nl
 
@@ -255,6 +259,7 @@ All external access uses a Cloudflare Tunnel — **no port forwarding is configu
 | jokegoudriaan.nl            | WordPress JokeGoudriaan  | 192.168.144.70:80              |
 | kledingruil.jokegoudriaan.nl| WordPress Kledingruil    | 192.168.144.71:80              |
 | n8n.janvv.nl                | n8n                      | 192.168.144.61:5678            |
+| opa.janvv.nl                | Grav                     | 192.168.144.72:80              |
 
 **LAN optimization:**  
 - On the LAN, all these hostnames resolve (via Pi-hole split-horizon DNS) to `192.168.144.31` (**lanproxy**).  
@@ -276,7 +281,8 @@ All external access uses a Cloudflare Tunnel — **no port forwarding is configu
 - **62-69**: Available for productivity applications
 - **70**: WordPress JokeGoudriaan (✅ active)
 - **71**: WordPress kledingruil (✅ active)  
-- **72-99**: Available for web applications
+- **72**: janvv Personal Website (✅ active)  
+- **73-99**: Available for web applications
 
 #### Media Services (192.168.144.100-119)
 - **100**: Plex (✅ active)
@@ -305,4 +311,4 @@ All external access uses a Cloudflare Tunnel — **no port forwarding is configu
 
 ---
 
-**Last Updated**: September 11, 2025
+**Last Updated**: October 1, 2025
