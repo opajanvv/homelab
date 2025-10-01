@@ -287,7 +287,7 @@ All external access uses a Cloudflare Tunnel — **no port forwarding is configu
 #### Media Services (192.168.144.100-119)
 - **100**: Plex (✅ active)
 - **101-109**: Available for Jellyfin, streaming services
-- **110**: Available for Immich photo management
+- **110**: Immich (✅ active)
 - **111-119**: Available for media management (*arr stack, etc.)
 
 #### Home Automation (192.168.144.120-139)

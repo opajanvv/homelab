@@ -497,22 +497,60 @@ See service-specific sections below.
   ```
 
 ### Web Server (CT 110)
-pct exec 110 -- bash -lc '
-apt update
-apt install -y nginx
-systemctl enable --now nginx
-'
 
+- **Install Nginx + PHP-FPM + deps:
+  ```bash
+  pct exec 110 -- bash -lc '
+  apt update
+  apt install -y nginx php-fpm php-cli php-zip php-xml php-mbstring php-curl php-intl unzip
+  systemctl enable --now nginx php8.3-fpm
+  '
+  ```
 
-# Replace default site root with /data
-sed -i 's|root /var/www/html;|root /data;|' /etc/nginx/sites-available/default
+- ** Deploy Grav
+  ```bash
+  pct exec 110 -- bash -lc '
+  set -e
+  mkdir -p /data/www && cd /data
+  curl -fsSLO https://getgrav.org/download/core/grav-admin/latest
+  unzip -q latest -d /data
+  mv /data/grav-admin /data/www || mv /data/grav /data/www
+  chown -R www-data:www-data /data/www
+  find /data/www -type d -exec chmod 755 {} \;
+  find /data/www -type f -exec chmod 644 {} \;
+  '
+  ```
 
-# Create a test index.html in /data
-echo '<h1>Hello from /data</h1>' > /data/index.html
-
-# Reload nginx to apply config
-systemctl reload nginx
-<F41><F29>
+- **Nginx Site Config
+  ```bash
+  pct exec 110 -- bash -lc "
+  cat >/etc/nginx/sites-available/grav <<'NGX'
+  server {
+      listen 80 default_server;
+      server_name _;
+      root /data/www;
+      index index.php index.html;
+  
+      location / {
+          try_files \$uri \$uri/ /index.php?\$query_string;
+      }
+  
+      location ~ \.php$ {
+          include snippets/fastcgi-php.conf;
+          fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+      }
+  
+      # Hardened paths
+      location ~* /(\.git|cache|bin|logs|backups|tests)/.*$ { return 403; }
+      location ~* /(system|vendor)/.*\.(txt|md|yaml|php)$ { return 403; }
+      location ~ /\. { deny all; }
+  }
+  NGX
+  ln -sf /etc/nginx/sites-available/grav /etc/nginx/sites-enabled/grav
+  rm -f /etc/nginx/sites-enabled/default
+  nginx -t && systemctl reload nginx
+  "
+  ```
 
 ---
 
