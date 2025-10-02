@@ -512,9 +512,9 @@ See service-specific sections below.
   pct exec 110 -- bash -lc '
   set -e
   mkdir -p /data/www && cd /data
-  curl -fsSLO https://getgrav.org/download/core/grav-admin/latest
+  curl -fsSLO https://getgrav.org/download/core/grav/latest
   unzip -q latest -d /data
-  mv /data/grav-admin /data/www || mv /data/grav /data/www
+  mv /data/grav /data/www
   chown -R www-data:www-data /data/www
   find /data/www -type d -exec chmod 755 {} \;
   find /data/www -type f -exec chmod 644 {} \;
@@ -528,7 +528,7 @@ See service-specific sections below.
   server {
       listen 80 default_server;
       server_name _;
-      root /data/www/grav-admin;
+      root /data/www/grav;
       index index.php index.html;
   
       location / {
