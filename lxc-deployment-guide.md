@@ -502,7 +502,7 @@ See service-specific sections below.
   ```bash
   pct exec 110 -- bash -lc '
   apt update
-  apt install -y nginx php-fpm php-cli php-zip php-xml php-mbstring php-curl php-intl unzip
+  apt install -y nginx php-fpm php-cli php-zip php-xml php-mbstring php-curl php-intl php-gd unzip
   systemctl enable --now nginx php8.3-fpm
   '
   ```
@@ -528,7 +528,7 @@ See service-specific sections below.
   server {
       listen 80 default_server;
       server_name _;
-      root /data/www;
+      root /data/www/grav-admin;
       index index.php index.html;
   
       location / {
@@ -537,7 +537,7 @@ See service-specific sections below.
   
       location ~ \.php$ {
           include snippets/fastcgi-php.conf;
-          fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+          fastcgi_pass unix:/run/php/php8.3-fpm.sock;
       }
   
       # Hardened paths
