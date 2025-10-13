@@ -172,7 +172,9 @@ See service-specific sections below.
   ufw allow from 192.168.144.25 to any port 3306 comment 'MariaDB from monitor server'
   ufw allow from 192.168.144.70 to any port 3306 comment 'MariaDB from WordPress main'
   ufw allow from 192.168.144.71 to any port 3306 comment 'MariaDB from WordPress kledingruil'
+  ufw allow from 192.168.144.73 to any port 3306 comment 'MariaDB from WordPress PGH'
   ```
+
 - **User Management**: 
   ```sql
   CREATE USER 'username'@'%' IDENTIFIED BY 'password';
@@ -237,8 +239,8 @@ See service-specific sections below.
   ```
 - **Systemd Service**: Create systemd service for automatic startup
 
-### WordPress Sites (CT 104 & CT 105)
-- **Service Type**: WordPress websites (JokeGoudriaan & Kledingruil)
+### WordPress Sites (CT 104, CT 105, CT 111)
+- **Service Type**: WordPress websites (JokeGoudriaan ,Kledingruil, PGH)
 - **LAMP Stack Installation**:
   ```bash
   # Install Apache, PHP, and modules
@@ -278,7 +280,25 @@ See service-specific sections below.
   a2dissite 000-default.conf
   a2ensite [site-config].conf
   systemctl reload apache2
-  ```
+
+  # Create a database for a Wordpress site on mariadb-server
+  ```sql
+  CREATE DATABASE <database_name>;
+  CREATE USER <user> IDENTIFIED BY <password>;
+  GRANT ALL PRIVILEGES ON <database_name.* TO <user>;
+  FLUSH PRIVILEGES;
+  EXIT
+i ```
+
+  # Download and install WordPress
+  In the lxcdata/<service> directory:
+  ```bash
+  cd /lxcdata/<service>
+  sudo wget https://wordpress.org/latest.tar.gz
+  sudo tar -xzvf latest.tar.gz
+  rm latest.tar.gz
+
+```
 - **WordPress Configuration**: Configure wp-config.php with MariaDB connection details
 - **File Permissions**: `chown -R www-data:www-data /data/wordpress`
 
@@ -585,7 +605,7 @@ pct exec <CONTAINER_ID> -- ufw status verbose
 **Audit All Containers:**
 ```bash
 # Check firewall status across all service containers
-for vmid in {100..110}; do
+for vmid in {100..111}; do
   echo "=== Container $vmid ==="
   pct exec $vmid -- ufw status verbose
   echo

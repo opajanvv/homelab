@@ -49,6 +49,7 @@
 | n8n | `/lxcdata/n8n` | `/data` | - | ssd_pool |
 | WordPress JokeGoudriaan | `/lxcdata/wp-jokegoudriaan` | `/data` | - | ssd_pool |
 | WordPress Kledingruil | `/lxcdata/wp-kledingruil` | `/data` | - | ssd_pool |
+| WordPress PGH | `/lxcdata/wp-pgh` | `/data` | - | ssd_pool |
 | Plex | `/lxcdata/plex` | `/data` | `/media` → `/media` | ssd_pool + media_pool |
 | Tunnel | No mounts | - | - | ssd_pool |
 | Lan Proxy | `lxcdata/lanproxy` | `/data` | - | ssd_pool |
@@ -182,6 +183,7 @@
 | wordpress | wordpress.local | 192.168.144.70 | WordPress JokeGoudriaan |
 | kledingruil | kledingruil.local | 192.168.144.71 | WordPress Kledingruil |
 | grav | grav.local | 192.168.144.72 | janvv Personal Website |
+| PGH | pgh.local | 192.168.144.73 | WordPress PGH |
 | plex | plex.local | 192.168.144.100 | Media Server |
 | immich | immich.local | 192.168.144.110 | Media Server |
 | homeassistant | homeassistant.local | 192.168.144.120 | Home Automation |
@@ -208,7 +210,7 @@
 | PostgreSQL | CT 100 | 192.168.144.40 | postgresql.local | 2 CPU, 2GB RAM, 16GB | None | Planka |
 | MariaDB | CT 101 | 192.168.144.41 | mariadb.local | 2 CPU, 2GB RAM, 16GB | None | WordPress sites |
 
-**MariaDB Databases**: wordpress (main site), wordpress_kledingruil (kledingruil site)
+**MariaDB Databases**: wordpress (main site), wordpress_kledingruil (kledingruil site), wordpress_pgh (PGH site)
 
 ### Application Services
 
@@ -219,6 +221,7 @@
 | WordPress JokeGoudriaan | CT 104 | 192.168.144.70 | jokegoudriaan.local | 2 CPU, 2GB RAM, 16GB | MariaDB | https://jokegoudriaan.nl |
 | WordPress Kledingruil | CT 105 | 192.168.144.71 | kledingruil.local | 2 CPU, 2GB RAM, 16GB | MariaDB | https://kledingruil.jokegoudriaan.nl |
 | janvv Personal Website | CT 110 | 192.168.144.72 | grav.local | 2 CPU, 2GB RAM, 20GB | | https://opa.janvv.nl |
+| WordPress PGH | CT 111 | 192.168.144.73 | pgh.local | 2 CPU, 2GB RAM, 16GB | MariaDB | https://pgh.janvv.nl |
 
 **Legacy Redirect**: https://jokegoudriaan.nl/kledingruil → https://kledingruil.jokegoudriaan.nl
 
