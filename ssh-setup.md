@@ -242,6 +242,16 @@ SSH keys are managed through foundation automation for LXC containers. For manua
 - User's authorized_keys: `~/.ssh/authorized_keys`
 - Permissions: `600` for authorized_keys, `700` for .ssh directory
 
+### Jump Box SSH Key Passphrase
+
+The jump box's jan user SSH key should **not have a passphrase**. This is required because:
+
+- **Automation requirements**: Foundation automation and automated processes need to connect to target machines without manual passphrase entry
+- **Security model**: The jump box is already a trusted component—if compromised, an attacker has network access regardless
+- **Operational simplicity**: No passphrase avoids manual intervention and simplifies automated operations
+
+**Security focus**: Protect the jump box itself through firewall rules, fail2ban, key-only authentication, and regular updates. Laptop SSH keys can (and should) have passphrases since they're used interactively.
+
 **Key Rotation:**
 1. Generate new key pair on workstation
 2. Add new public key to authorized_keys
