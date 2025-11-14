@@ -199,7 +199,7 @@ ssh -J server postgresql.local
 ssh -J server homeassistant.local
 ```
 
-**Key Management:** Your laptop's SSH public key only needs to be on the jump box (server). The jump box's SSH key is deployed to all target machines via foundation automation. No agent forwarding (`-A`) is needed—the jump box authenticates to targets using its own key.
+**Key Management:** Foundation automation automatically adds your laptop SSH keys (`laptop1.pub` and `laptop2.pub`) to the `authorized_keys` file on all containers and VMs. Your laptop keys are also on the jump box for direct access. When using ProxyJump (`ssh -J server container`), your laptop's key authenticates directly to the target machine since the keys are already deployed—no additional flags needed.
 
 **Security Benefit:** By requiring explicit ProxyJump in commands, the jump box pattern is not stored in SSH config files. If your workstation is compromised, an attacker would need to know about the jump box pattern rather than discovering it automatically.
 
@@ -236,7 +236,14 @@ ssh server
 
 ### Key Deployment
 
-SSH keys are managed through foundation automation for LXC containers. For manual deployments:
+**Foundation Automation:**
+Foundation automation automatically manages SSH keys for all LXC containers and VMs:
+- Adds laptop keys (`laptop1.pub` and `laptop2.pub`) to `~/.ssh/authorized_keys` on all targets
+- Replaces/updates keys if needed during automated runs
+- Ensures consistent key access across all infrastructure
+
+**Manual Deployments:**
+For devices that cannot use foundation automation:
 
 **Public Key Location:**
 - User's authorized_keys: `~/.ssh/authorized_keys`
@@ -250,18 +257,25 @@ The jump box's jan user SSH key should **not have a passphrase**. This is requir
 - **Security model**: The jump box is already a trusted component—if compromised, an attacker has network access regardless
 - **Operational simplicity**: No passphrase avoids manual intervention and simplifies automated operations
 
-**Security focus**: Protect the jump box itself through firewall rules, fail2ban, key-only authentication, and regular updates. Laptop SSH keys can (and should) have passphrases since they're used interactively.
+**Security focus**: Protect the jump box itself through firewall rules, fail2ban, key-only authentication, and regular updates. Laptop SSH keys (`laptop1` and `laptop2`) can (and should) have passphrases since they're used interactively.
 
 **Key Rotation:**
+
+**For Laptop Keys (Managed by Foundation Automation):**
+1. Generate new key pair on laptop
+2. Update foundation automation vault with new public key
+3. Foundation automation will automatically deploy to all containers/VMs
+4. Test key authentication after automation runs
+
+**For Manual Deployments:**
 1. Generate new key pair on workstation
 2. Add new public key to authorized_keys
 3. Test new key authentication
 4. Remove old key from authorized_keys
-5. Update foundation automation vault if applicable
 
 ### Multiple Key Support
 
-Multiple SSH keys can be added to `~/.ssh/authorized_keys` (one per line). Foundation automation deploys keys from the vault.
+Multiple SSH keys can be added to `~/.ssh/authorized_keys` (one per line). Foundation automation automatically deploys `laptop1.pub` and `laptop2.pub` to all containers and VMs from the vault.
 
 ## Troubleshooting
 
