@@ -572,6 +572,109 @@ i ```
   "
   ```
 
+### AI Server (CT 112)
+- **Service Type**: AI server
+- **Container Configuration**:
+  - **ID**: 112
+  - **Hostname**: ai
+  - **IP Address**: 192.168.144.62/23 (Application range)
+  - **Resources**: 6 cores, 12288 MB RAM, 80 GB disk, 512 MB swap
+  - **Storage**: `/lxcdata/ai → /data`
+  - **Features**: keyctl=1, nesting=1, fuse=1
+  - **OS Type**: ubuntu
+  - **Onboot**: enabled
+  - **Tags**: app
+- **Network Configuration**:
+  ```
+  net0: name=eth0,bridge=vmbr0,firewall=1,gw=192.168.144.1,hwaddr=BC:24:11:58:70:8D,ip=192.168.144.62/23,type=veth
+  ```
+- **Installation**:
+  ```bash
+  # Update package lists and install essential tools
+  sudo apt update && sudo apt install -y curl ca-certificates
+  
+  # IMPORTANT: If rootfs shows smaller size than configured (e.g., 24G instead of 80G),
+  # resize the filesystem to use all available space:
+  # First, ensure rootfs size is correct on Proxmox host: pct config 112 | grep rootfs
+  # Then resize inside container:
+  sudo resize2fs $(df / | tail -1 | awk '{print $1}')
+  df -h /  # Verify the resize
+  
+  # Install Ollama
+  curl -fsSL https://ollama.com/install.sh | sudo sh
+  
+  # Configure systemd service (if not already created by install script)
+  # The service file should be at /etc/systemd/system/ollama.service
+  # Configured to be accessible from the entire homelab network
+  sudo bash -c 'cat <<EOF > /etc/systemd/system/ollama.service
+[Unit]
+Description=Ollama Service
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/ollama serve
+User=ollama
+Group=ollama
+Restart=always
+RestartSec=3
+# Configure to listen on all interfaces for homelab access
+Environment="OLLAMA_HOST=0.0.0.0:11434"
+
+[Install]
+WantedBy=default.target
+EOF'
+  
+  # Reload systemd and enable/start the service
+  sudo systemctl daemon-reload
+  sudo systemctl enable ollama
+  sudo systemctl start ollama
+  
+  # Verify the service is running
+  sudo systemctl status ollama
+  ```
+  
+  **Note**: The installation script will attempt to install NVIDIA CUDA drivers, but this will fail in LXC containers (kernel headers not available). GPU passthrough in LXC requires special configuration on the Proxmox host. Ollama will still work in CPU mode.
+  
+- **Testing and Model Management**:
+  ```bash
+  # Verify Ollama API is responding
+  curl localhost:11434/api/tags
+  
+  # Pull a model (use correct model name/tag)
+  ollama pull llama3
+  # Or: ollama pull llama3:8b
+  
+  # List downloaded models
+  ollama list
+  
+  # Run a model interactively
+  ollama run llama3
+  
+  # Remove a model
+  ollama rm <model-name>
+  ```
+  
+  **Troubleshooting Model Pull Errors**: If you get "file does not exist" errors:
+  - Verify network connectivity: `curl -I https://ollama.com`
+  - Check DNS resolution: `ping -c 3 ollama.com`
+  - Try the base model name without tags: `ollama pull llama3`
+  - Verify the model name/tag exists on the [Ollama library](https://ollama.com/library)
+
+- **Firewall Configuration**:
+  ```bash
+  # Standard foundation rules (should already be configured)
+  ufw allow from 192.168.144.10 to any port 22 comment 'SSH from Proxmox host only'
+  ufw allow 9100/tcp comment 'Node Exporter monitoring'
+  
+  # Allow Ollama API access from entire homelab network
+  ufw allow from 192.168.144.0/23 to any port 11434 comment 'Ollama API from homelab network'
+  
+  # Verify firewall rules
+  ufw status verbose
+  ```
+  
+  **Configuration Summary**: With the service configured to listen on `0.0.0.0:11434` and the firewall allowing access from `192.168.144.0/23`, Ollama will be accessible from any device or container in your homelab network at `http://192.168.144.62:11434`.
+
 ---
 
 ## Firewall Management
