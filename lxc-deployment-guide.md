@@ -578,7 +578,7 @@ i ```
   - **ID**: 112
   - **Hostname**: ai
   - **IP Address**: 192.168.144.62/23 (Application range)
-  - **Resources**: 6 cores, 12288 MB RAM, 80 GB disk, 512 MB swap
+  - **Resources**: 8 cores, 12288 MB RAM, 80 GB disk, 512 MB swap
   - **Storage**: `/lxcdata/ai → /data`
   - **Features**: keyctl=1, nesting=1, fuse=1
   - **OS Type**: ubuntu
@@ -634,6 +634,57 @@ EOF'
   ```
   
   **Note**: The installation script will attempt to install NVIDIA CUDA drivers, but this will fail in LXC containers (kernel headers not available). GPU passthrough in LXC requires special configuration on the Proxmox host. Ollama will still work in CPU mode.
+
+- **Install Open WebUI**:
+  ```bash
+  # Install pipx (manages Python applications in isolated environments)
+  sudo apt update
+  sudo apt install -y python3 python3-venv pipx
+  
+  # Ensure pipx user binaries are in PATH
+  pipx ensurepath
+  # Log out and back in, or source your shell config to update PATH
+  # Alternatively, use the full path: ~/.local/bin/open-webui
+  
+  # Install Open WebUI using pipx
+  pipx install open-webui
+  
+  # Verify installation and get the path
+  which open-webui
+  # This should show: /home/jan/.local/bin/open-webui
+  
+  # Create systemd service for Open WebUI
+  sudo bash -c 'cat <<EOF > /etc/systemd/system/open-webui.service
+[Unit]
+Description=Open WebUI Service
+After=network-online.target ollama.service
+Requires=ollama.service
+
+[Service]
+Type=simple
+User=jan
+Group=jan
+WorkingDirectory=/home/jan
+Environment="PATH=/home/jan/.local/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="OLLAMA_BASE_URL=http://127.0.0.1:11434"
+ExecStart=/home/jan/.local/bin/open-webui serve --host 0.0.0.0 --port 8080
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target
+EOF'
+  
+  # Reload systemd and enable/start the service
+  sudo systemctl daemon-reload
+  sudo systemctl enable open-webui
+  sudo systemctl start open-webui
+  
+  # Verify the service is running
+  sudo systemctl status open-webui
+  ```
+  
+  **Note**: Open WebUI is configured to connect to Ollama on `http://127.0.0.1:11434` (localhost) since both services run on the same container. The web interface will be accessible at `http://192.168.144.62:8080` from your homelab network.
   
 - **Testing and Model Management**:
   ```bash
@@ -669,11 +720,16 @@ EOF'
   # Allow Ollama API access from entire homelab network
   ufw allow from 192.168.144.0/23 to any port 11434 comment 'Ollama API from homelab network'
   
+  # Allow Open WebUI access from entire homelab network
+  ufw allow from 192.168.144.0/23 to any port 8080 comment 'Open WebUI from homelab network'
+  
   # Verify firewall rules
   ufw status verbose
   ```
   
-  **Configuration Summary**: With the service configured to listen on `0.0.0.0:11434` and the firewall allowing access from `192.168.144.0/23`, Ollama will be accessible from any device or container in your homelab network at `http://192.168.144.62:11434`.
+  **Configuration Summary**: 
+  - Ollama API is accessible at `http://192.168.144.62:11434` from your homelab network
+  - Open WebUI is accessible at `http://192.168.144.62:8080` from your homelab network
 
 ---
 
